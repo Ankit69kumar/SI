@@ -1,17 +1,19 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { Menu, X, Sparkles } from 'lucide-react'
+import { Menu, X, Sparkles, Globe } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function PublicNavbar() {
   const [open, setOpen] = useState(false)
   const { user } = useAuth()
+  const { t, language, setLanguage, languages } = useLanguage()
   const navigate = useNavigate()
 
   const links = [
-    { to: '/services', label: 'Browse Services' },
-    { to: '/how-it-works', label: 'How it Works' },
-    { to: '/providers', label: 'Providers' },
+    { to: '/services', label: t('landing.nav.browse') },
+    { to: '/how-it-works', label: t('landing.nav.howItWorks') },
+    { to: '/providers', label: t('landing.nav.providers') },
   ]
 
   return (
@@ -22,7 +24,7 @@ export default function PublicNavbar() {
             <div className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center">
               <Sparkles size={20} className="text-white" />
             </div>
-            <span className="text-xl font-bold text-ink-900">Co-Serve</span>
+            <span className="text-xl font-bold text-ink-900">{t('app.name')}</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -34,14 +36,21 @@ export default function PublicNavbar() {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
+            <div className="relative">
+              <Globe size={16} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
+              <select value={language} onChange={e => setLanguage(e.target.value)}
+                className="text-sm rounded-lg border border-ink-200 bg-white pl-8 pr-3 py-2 text-ink-700 outline-none focus:border-primary-500">
+                {Object.values(languages).map(l => <option key={l.code} value={l.code}>{l.nativeName}</option>)}
+              </select>
+            </div>
             {user ? (
               <button className="btn-primary" onClick={() => navigate(`/${user.role}/dashboard`)}>
-                Go to Dashboard
+                {t('landing.nav.dashboard')}
               </button>
             ) : (
               <>
-                <Link to="/login" className="btn-ghost">Login</Link>
-                <Link to="/register" className="btn-primary">Get Started</Link>
+                <Link to="/login" className="btn-ghost">{t('landing.nav.login')}</Link>
+                <Link to="/register" className="btn-primary">{t('landing.nav.getStarted')}</Link>
               </>
             )}
           </div>
@@ -61,9 +70,16 @@ export default function PublicNavbar() {
                 {l.label}
               </Link>
             ))}
+            <div className="relative px-3 py-2">
+              <Globe size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
+              <select value={language} onChange={e => setLanguage(e.target.value)}
+                className="w-full text-sm rounded-lg border border-ink-200 bg-white pl-9 pr-3 py-2 text-ink-700 outline-none">
+                {Object.values(languages).map(l => <option key={l.code} value={l.code}>{l.nativeName}</option>)}
+              </select>
+            </div>
             <div className="pt-3 flex gap-3">
-              <Link to="/login" onClick={() => setOpen(false)} className="btn-secondary flex-1">Login</Link>
-              <Link to="/register" onClick={() => setOpen(false)} className="btn-primary flex-1">Get Started</Link>
+              <Link to="/login" onClick={() => setOpen(false)} className="btn-secondary flex-1">{t('landing.nav.login')}</Link>
+              <Link to="/register" onClick={() => setOpen(false)} className="btn-primary flex-1">{t('landing.nav.getStarted')}</Link>
             </div>
           </div>
         </div>

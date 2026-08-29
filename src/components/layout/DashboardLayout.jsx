@@ -1,40 +1,42 @@
 import { NavLink, useNavigate, Outlet, useLocation } from 'react-router-dom'
 import { useState } from 'react'
-import { Sparkles, Bell, LogOut, Menu, X, ChevronRight, User, Search } from 'lucide-react'
+import { Sparkles, Bell, LogOut, Menu, X, Globe } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { useNotifications } from '../../context/NotificationContext'
 import Avatar from '../ui/Avatar'
 
 const NAV = {
   customer: [
-    { to: '/customer/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
-    { to: '/customer/services', label: 'Browse Services', icon: 'Search' },
-    { to: '/customer/create-request', label: 'New Request', icon: 'PlusCircle' },
-    { to: '/customer/bookings', label: 'My Bookings', icon: 'CalendarDays' },
-    { to: '/customer/notifications', label: 'Notifications', icon: 'Bell', badge: true },
-    { to: '/customer/profile', label: 'Profile', icon: 'UserRound' },
+    { to: '/customer/dashboard', labelKey: 'nav.dashboard', icon: 'LayoutDashboard' },
+    { to: '/customer/services', labelKey: 'nav.browseServices', icon: 'Search' },
+    { to: '/customer/create-request', labelKey: 'nav.newRequest', icon: 'PlusCircle' },
+    { to: '/customer/bookings', labelKey: 'nav.myBookings', icon: 'CalendarDays' },
+    { to: '/customer/notifications', labelKey: 'nav.notifications', icon: 'Bell', badge: true },
+    { to: '/customer/profile', labelKey: 'nav.profile', icon: 'UserRound' },
   ],
   provider: [
-    { to: '/provider/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
-    { to: '/provider/jobs', label: 'My Jobs', icon: 'Briefcase' },
-    { to: '/provider/earnings', label: 'Earnings', icon: 'Wallet' },
-    { to: '/provider/reviews', label: 'Reviews', icon: 'Star' },
-    { to: '/provider/notifications', label: 'Notifications', icon: 'Bell', badge: true },
-    { to: '/provider/profile', label: 'Profile', icon: 'UserRound' },
+    { to: '/provider/dashboard', labelKey: 'nav.dashboard', icon: 'LayoutDashboard' },
+    { to: '/provider/jobs', labelKey: 'nav.myJobs', icon: 'Briefcase' },
+    { to: '/provider/earnings', labelKey: 'nav.earnings', icon: 'Wallet' },
+    { to: '/provider/reviews', labelKey: 'nav.reviews', icon: 'Star' },
+    { to: '/provider/notifications', labelKey: 'nav.notifications', icon: 'Bell', badge: true },
+    { to: '/provider/profile', labelKey: 'nav.profile', icon: 'UserRound' },
   ],
   admin: [
-    { to: '/admin/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
-    { to: '/admin/users', label: 'Users', icon: 'Users' },
-    { to: '/admin/providers', label: 'Providers', icon: 'HardHat' },
-    { to: '/admin/requests', label: 'Service Requests', icon: 'ClipboardList' },
-    { to: '/admin/analytics', label: 'Analytics', icon: 'BarChart3' },
-    { to: '/admin/complaints', label: 'Complaints', icon: 'ShieldAlert' },
+    { to: '/admin/dashboard', labelKey: 'nav.dashboard', icon: 'LayoutDashboard' },
+    { to: '/admin/users', labelKey: 'nav.users', icon: 'Users' },
+    { to: '/admin/providers', labelKey: 'nav.providers', icon: 'HardHat' },
+    { to: '/admin/requests', labelKey: 'nav.requests', icon: 'ClipboardList' },
+    { to: '/admin/analytics', labelKey: 'nav.analytics', icon: 'BarChart3' },
+    { to: '/admin/complaints', labelKey: 'nav.complaints', icon: 'ShieldAlert' },
   ],
 }
 
 export default function DashboardLayout() {
   const { user, logout } = useAuth()
+  const { t, language, setLanguage, languages } = useLanguage()
   const { unreadCount } = useNotifications()
   const navigate = useNavigate()
   const location = useLocation()
@@ -48,12 +50,13 @@ export default function DashboardLayout() {
   const nav = NAV[user.role] || []
   const roleLabel = user.role.charAt(0).toUpperCase() + user.role.slice(1)
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     navigate('/')
   }
 
-  const pageTitle = nav.find(n => location.pathname.startsWith(n.to))?.label || 'Dashboard'
+  const pageTitle = nav.find(n => location.pathname.startsWith(n.to))?.labelKey
+  const pageTitleText = pageTitle ? t(pageTitle) : t('nav.dashboard')
 
   const Sidebar = (
     <aside className="w-64 bg-white border-r border-ink-100 flex flex-col h-full">
@@ -62,7 +65,7 @@ export default function DashboardLayout() {
           <div className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center">
             <Sparkles size={20} className="text-white" />
           </div>
-          <span className="text-xl font-bold text-ink-900">Co-Serve</span>
+          <span className="text-xl font-bold text-ink-900">{t('app.name')}</span>
         </div>
       </div>
 
@@ -71,7 +74,7 @@ export default function DashboardLayout() {
           <Avatar src={user.avatar} name={user.name} size={40} />
           <div className="min-w-0">
             <p className="font-semibold text-ink-900 text-sm truncate">{user.name}</p>
-            <p className="text-xs text-ink-400 capitalize">{roleLabel} Account</p>
+            <p className="text-xs text-ink-400 capitalize">{roleLabel} {t('nav.account')}</p>
           </div>
         </div>
       </div>
@@ -87,7 +90,7 @@ export default function DashboardLayout() {
                 }`
               }>
               {Icon && <Icon size={18} />}
-              <span className="flex-1">{item.label}</span>
+              <span className="flex-1">{t(item.labelKey)}</span>
               {item.badge && unreadCount > 0 && (
                 <span className="bg-error-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{unreadCount}</span>
               )}
@@ -96,9 +99,16 @@ export default function DashboardLayout() {
         })}
       </nav>
 
-      <div className="px-3 py-4 border-t border-ink-100">
+      <div className="px-3 py-4 border-t border-ink-100 space-y-2">
+        <div className="relative px-1">
+          <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
+          <select value={language} onChange={e => setLanguage(e.target.value)}
+            className="w-full text-sm rounded-lg border border-ink-200 bg-white pl-8 pr-3 py-2 text-ink-700 outline-none focus:border-primary-500">
+            {Object.values(languages).map(l => <option key={l.code} value={l.code}>{l.nativeName}</option>)}
+          </select>
+        </div>
         <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-error-600 hover:bg-error-50 w-full transition">
-          <LogOut size={18} /> Logout
+          <LogOut size={18} /> {t('nav.logout')}
         </button>
       </div>
     </aside>
@@ -121,7 +131,7 @@ export default function DashboardLayout() {
             <button className="lg:hidden btn-ghost p-2" onClick={() => setSidebarOpen(true)}>
               <Menu size={22} />
             </button>
-            <h1 className="text-lg font-bold text-ink-900">{pageTitle}</h1>
+            <h1 className="text-lg font-bold text-ink-900">{pageTitleText}</h1>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => navigate(`/${user.role}/notifications`)} className="btn-ghost p-2.5 relative">

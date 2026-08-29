@@ -1,11 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { LanguageProvider, useLanguage } from './context/LanguageContext'
 import { NotificationProvider } from './context/NotificationContext'
 import DashboardLayout from './components/layout/DashboardLayout'
+import Spinner from './components/ui/Spinner'
 
 import Landing from './pages/Landing'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
+import LanguageSelect from './pages/LanguageSelect'
 import Notifications from './pages/Notifications'
 
 import CustomerDashboard from './pages/customer/CustomerDashboard'
@@ -29,13 +32,24 @@ import AdminAnalytics from './pages/admin/AdminAnalytics'
 import AdminComplaints from './pages/admin/AdminComplaints'
 
 function RequireAuth({ children, role }) {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
+  if (loading) return <div className="flex items-center justify-center h-screen"><Spinner /></div>
   if (!user) return <Navigate to="/login" replace />
   if (role && user.role !== role) return <Navigate to={`/${user.role}/dashboard`} replace />
   return children
 }
 
 function AppRoutes() {
+  const { language } = useLanguage()
+
+  if (!language) {
+    return (
+      <Routes>
+        <Route path="*" element={<LanguageSelect />} />
+      </Routes>
+    )
+  }
+
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
@@ -83,12 +97,14 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </NotificationProvider>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <NotificationProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </NotificationProvider>
+      </AuthProvider>
+    </LanguageProvider>
   )
 }
